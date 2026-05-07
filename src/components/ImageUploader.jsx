@@ -75,29 +75,22 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
               className="w-full h-auto max-h-[420px] object-cover"
             />
 
-            {/* Camera UI overlay */}
-            <div className="absolute inset-0 flex flex-col justify-between p-4 pointer-events-none">
-              {/* Top bar */}
-              <div className="flex justify-end pointer-events-auto">
-                <button
-                  onClick={closeCamera}
-                  className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+            {/* Close button */}
+            <button
+              onClick={closeCamera}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white z-10"
+            >
+              <X className="w-4 h-4" />
+            </button>
 
-              {/* Bottom bar */}
-              <div className="flex items-center justify-center pointer-events-auto">
-                <button
-                  onClick={handleCapture}
-                  disabled={!cameraReady}
-                  className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm border-4 border-white shadow-lg flex items-center justify-center hover:bg-white transition-colors disabled:opacity-50"
-                >
-                  <Circle className="w-7 h-7 text-primary fill-primary" />
-                </button>
-              </div>
-            </div>
+            {/* Shutter button */}
+            <button
+              onClick={handleCapture}
+              disabled={!cameraReady}
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full bg-white/90 border-4 border-white shadow-lg flex items-center justify-center z-10 disabled:opacity-50"
+            >
+              <Circle className="w-7 h-7 text-primary fill-primary" />
+            </button>
 
             {!cameraReady && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60">
