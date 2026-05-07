@@ -24,14 +24,17 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
   };
 
   const handleCapture = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot();
+    const imageSrc = webcamRef.current?.getScreenshot({
+      width: 3840,
+      height: 2160,
+    });
     if (!imageSrc) return;
 
-    // Convert base64 to File
+    // Convert base64 PNG to File (lossless, no color shift)
     fetch(imageSrc)
       .then((r) => r.blob())
       .then((blob) => {
-        const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
+        const file = new File([blob], "capture.png", { type: "image/png" });
         setShowCamera(false);
         setCameraReady(false);
         onImageSelect(file);
@@ -62,9 +65,12 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
           >
             <Webcam
               ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              screenshotQuality={0.95}
-              videoConstraints={{ facingMode: "environment" }}
+              screenshotFormat="image/png"
+              videoConstraints={{
+                facingMode: "environment",
+                width: { ideal: 3840 },
+                height: { ideal: 2160 },
+              }}
               onUserMedia={() => setCameraReady(true)}
               className="w-full h-auto max-h-[420px] object-cover"
             />
