@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles, X, User } from "lucide-react";
+import { Palette, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
@@ -9,7 +9,6 @@ import ColorResult from "@/components/ColorResult";
 import RecolorPanel from "@/components/RecolorPanel";
 import FashionModePanel from "@/components/FashionModePanel";
 import ShareButton from "@/components/ShareButton";
-import ARTryOnPanel from "@/components/ARTryOnPanel";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState(null);
@@ -20,7 +19,8 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecoloring, setIsRecoloring] = useState(false);
   const [showFashionMode, setShowFashionMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion" | "tryon"
+  const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion"
+  const [isFashionGenerating, setIsFashionGenerating] = useState(false);
 
   const handleImageSelect = async (file) => {
     setIsUploading(true);
@@ -29,6 +29,7 @@ export default function Home() {
     setShowFashionMode(false);
     setActiveTab("standard");
     setShowComparison(true);
+    setIsFashionGenerating(false);
 
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setImageUrl(file_url);
@@ -87,6 +88,7 @@ Target color: ${targetColor}`,
   const handleFashionApply = async (styleDescription, aestheticNote) => {
     if (!imageUrl) return;
     setIsRecoloring(true);
+    setIsFashionGenerating(true);
     setShowComparison(true);
 
     const result = await base44.integrations.Core.GenerateImage({
@@ -107,6 +109,7 @@ Apply: ${styleDescription}`,
 
     setRecoloredUrl(result.url);
     setIsRecoloring(false);
+    setIsFashionGenerating(false);
   };
 
   const handleReset = () => {
@@ -116,6 +119,7 @@ Apply: ${styleDescription}`,
     setShowFashionMode(false);
     setActiveTab("standard");
     setShowComparison(true);
+    setIsFashionGenerating(false);
   };
 
   return (
@@ -199,13 +203,35 @@ Apply: ${styleDescription}`,
               exit={{ opacity: 0 }}
               className="space-y-6"
             >
-              <ImagePreview
-                originalUrl={imageUrl}
-                recoloredUrl={recoloredUrl}
-                showComparison={showComparison}
-                onToggleComparison={() => setShowComparison(!showComparison)}
-                onReset={handleReset}
-              />
+              <motion.div
+                animate={activeTab === "fashion" ? { y: -16 } : { y: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              >
+                {isFashionGenerating ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full rounded-2xl overflow-hidden bg-secondary/30 border border-border flex flex-col items-center justify-center gap-4"
+                    style={{ minHeight: 280 }}
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    >
+                      <Loader2 className="w-10 h-10 text-accent" />
+                    </motion.div>
+                    <p className="text-sm text-muted-foreground font-medium">Generating your look…</p>
+                  </motion.div>
+                ) : (
+                  <ImagePreview
+                    originalUrl={imageUrl}
+                    recoloredUrl={recoloredUrl}
+                    showComparison={showComparison}
+                    onToggleComparison={() => setShowComparison(!showComparison)}
+                    onReset={handleReset}
+                  />
+                )}
+              </motion.div>
 
               {isAnalyzing && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -230,7 +256,6 @@ Apply: ${styleDescription}`,
                 {[
                   { key: "standard", label: "Recolor" },
                   { key: "fashion", label: "✦ Fashion" },
-                  { key: "tryon", label: "👤 Try-On" },
                 ].map((tab) => (
                   <button
                     key={tab.key}
@@ -250,10 +275,6 @@ Apply: ${styleDescription}`,
                 {activeTab === "fashion" ? (
                   <motion.div key="fashion" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
                     <FashionModePanel imageUrl={imageUrl} onApply={handleFashionApply} isApplying={isRecoloring} />
-                  </motion.div>
-                ) : activeTab === "tryon" ? (
-                  <motion.div key="tryon" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                    <ARTryOnPanel recoloredUrl={recoloredUrl} originalUrl={imageUrl} colorData={colorData} />
                   </motion.div>
                 ) : (
                   <motion.div key="standard" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-6">

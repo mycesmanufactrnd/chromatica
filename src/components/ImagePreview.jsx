@@ -27,7 +27,7 @@ export default function ImagePreview({
       transition={{ duration: 0.4 }}
       className="w-full"
     >
-      <div className="relative rounded-2xl overflow-hidden bg-secondary/30 border border-border">
+      <div className="relative rounded-2xl overflow-hidden bg-secondary/30 border border-border flex items-center justify-center" style={{ minHeight: 200 }}>
         <AnimatePresence mode="wait">
           <motion.img
             key={displayUrl}
@@ -37,7 +37,8 @@ export default function ImagePreview({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full h-auto max-h-[420px] object-contain"
+            className="w-full h-auto max-h-[480px] object-contain block"
+            style={{ maxWidth: "100%", height: "auto" }}
           />
         </AnimatePresence>
 
