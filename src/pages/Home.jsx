@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Palette, Sparkles, Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
@@ -20,6 +21,7 @@ export default function Home() {
   const [isRecoloring, setIsRecoloring] = useState(false);
   const [showFashionMode, setShowFashionMode] = useState(false);
   const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion"
+  const { toast } = useToast();
 
 
   const handleImageSelect = async (file) => {
@@ -65,8 +67,9 @@ Keep response short and clear.`,
     setIsRecoloring(true);
     setShowComparison(true);
 
-    const result = await base44.integrations.Core.GenerateImage({
-      prompt: `Change the color of the main object in this image to: ${targetColor}
+    try {
+      const result = await base44.integrations.Core.GenerateImage({
+        prompt: `Change the color of the main object in this image to: ${targetColor}
 
 STRICT RULES:
 - Keep everything else exactly the same
@@ -76,10 +79,13 @@ STRICT RULES:
 - Output must look like a real edited photo
 
 Target color: ${targetColor}`,
-      existing_image_urls: [imageUrl],
-    });
-
-    setRecoloredUrl(result.url);
+        existing_image_urls: [imageUrl],
+      });
+      setRecoloredUrl(result.url);
+    } catch (err) {
+      const msg = err?.message?.replace(/^Base44Error:\s*/i, "") || "Image generation failed.";
+      toast({ description: msg, duration: 2000 });
+    }
     setIsRecoloring(false);
   };
 
@@ -88,8 +94,9 @@ Target color: ${targetColor}`,
     setIsRecoloring(true);
     setShowComparison(true);
 
-    const result = await base44.integrations.Core.GenerateImage({
-      prompt: `Transform the main object in this image with the following fashion style: ${styleDescription}
+    try {
+      const result = await base44.integrations.Core.GenerateImage({
+        prompt: `Transform the main object in this image with the following fashion style: ${styleDescription}
 
 Style notes: ${aestheticNote || ""}
 
@@ -101,10 +108,13 @@ STRICT RULES:
 - Result must look like a real fashion photo edit, photorealistic
 
 Apply: ${styleDescription}`,
-      existing_image_urls: [imageUrl],
-    });
-
-    setRecoloredUrl(result.url);
+        existing_image_urls: [imageUrl],
+      });
+      setRecoloredUrl(result.url);
+    } catch (err) {
+      const msg = err?.message?.replace(/^Base44Error:\s*/i, "") || "Image generation failed.";
+      toast({ description: msg, duration: 2000 });
+    }
     setIsRecoloring(false);
   };
 
