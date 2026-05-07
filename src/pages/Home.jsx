@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles, X } from "lucide-react";
+import { Palette, Sparkles, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
 import ColorResult from "@/components/ColorResult";
 import RecolorPanel from "@/components/RecolorPanel";
 import FashionModePanel from "@/components/FashionModePanel";
+import ShareButton from "@/components/ShareButton";
+import ARTryOnPanel from "@/components/ARTryOnPanel";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState(null);
@@ -18,12 +20,14 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecoloring, setIsRecoloring] = useState(false);
   const [showFashionMode, setShowFashionMode] = useState(false);
+  const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion" | "tryon"
 
   const handleImageSelect = async (file) => {
     setIsUploading(true);
     setColorData(null);
     setRecoloredUrl(null);
     setShowFashionMode(false);
+    setActiveTab("standard");
     setShowComparison(true);
 
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -110,6 +114,7 @@ Apply: ${styleDescription}`,
     setRecoloredUrl(null);
     setColorData(null);
     setShowFashionMode(false);
+    setActiveTab("standard");
     setShowComparison(true);
   };
 
@@ -127,19 +132,11 @@ Apply: ${styleDescription}`,
             </span>
           </div>
           {imageUrl && (
-            <Button
-              variant={showFashionMode ? "default" : "ghost"}
-              size="sm"
-              className={`text-xs gap-1.5 rounded-xl ${showFashionMode ? "bg-accent text-accent-foreground hover:bg-accent/90" : "text-muted-foreground"}`}
-              onClick={() => setShowFashionMode((v) => !v)}
-            >
-              {showFashionMode ? (
-                <X className="w-3.5 h-3.5" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5" />
-              )}
-              {showFashionMode ? "Close" : "Fashion Mode"}
-            </Button>
+            <ShareButton
+              originalUrl={imageUrl}
+              recoloredUrl={recoloredUrl}
+              colorData={colorData}
+            />
           )}
         </div>
       </header>
@@ -228,32 +225,40 @@ Apply: ${styleDescription}`,
                 </motion.div>
               )}
 
-              <AnimatePresence mode="wait">
-                {showFashionMode ? (
-                  <motion.div
-                    key="fashion"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+              {/* Tabs */}
+              <div className="flex gap-1 p-1 bg-secondary/60 rounded-xl border border-border">
+                {[
+                  { key: "standard", label: "Recolor" },
+                  { key: "fashion", label: "✦ Fashion" },
+                  { key: "tryon", label: "👤 Try-On" },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex-1 text-xs font-medium py-2 rounded-lg transition-all duration-200 ${
+                      activeTab === tab.key
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
                   >
-                    <FashionModePanel
-                      imageUrl={imageUrl}
-                      onApply={handleFashionApply}
-                      isApplying={isRecoloring}
-                    />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <AnimatePresence mode="wait">
+                {activeTab === "fashion" ? (
+                  <motion.div key="fashion" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                    <FashionModePanel imageUrl={imageUrl} onApply={handleFashionApply} isApplying={isRecoloring} />
+                  </motion.div>
+                ) : activeTab === "tryon" ? (
+                  <motion.div key="tryon" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                    <ARTryOnPanel recoloredUrl={recoloredUrl} originalUrl={imageUrl} colorData={colorData} />
                   </motion.div>
                 ) : (
-                  <motion.div
-                    key="standard"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="space-y-6"
-                  >
+                  <motion.div key="standard" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-6">
                     <ColorResult colorData={colorData} />
-                    {colorData && (
-                      <RecolorPanel onRecolor={handleRecolor} isLoading={isRecoloring} />
-                    )}
+                    {colorData && <RecolorPanel onRecolor={handleRecolor} isLoading={isRecoloring} />}
                   </motion.div>
                 )}
               </AnimatePresence>

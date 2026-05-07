@@ -1,0 +1,33 @@
+{
+  "name": "StyleExperiment",
+  "type": "object",
+  "properties": {
+    "original_url": {
+      "type": "string",
+      "description": "Original image URL"
+    },
+    "recolored_url": {
+      "type": "string",
+      "description": "Recolored image URL"
+    },
+    "fashion_color_name": {
+      "type": "string",
+      "description": "Fashion color name"
+    },
+    "simple_color_name": {
+      "type": "string",
+      "description": "Simple color name"
+    },
+    "hex_code": {
+      "type": "string",
+      "description": "HEX color code"
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Color explanation"
+    }
+  },
+  "required": [
+    "original_url"
+  ]
+}
