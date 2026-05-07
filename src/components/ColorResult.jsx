@@ -24,10 +24,6 @@ export default function ColorResult({ colorData }) {
       <div className="bg-card rounded-2xl border border-border overflow-hidden">
         <div className="p-5 space-y-4">
           <div className="flex items-center gap-3">
-            <div
-              className="w-12 h-12 rounded-xl shadow-sm border border-border/50 flex-shrink-0"
-              style={{ backgroundColor: colorData.hex_code }}
-            />
             <div className="min-w-0">
               <p className="text-lg font-semibold text-foreground leading-tight">
                 {colorData.fashion_color_name}
