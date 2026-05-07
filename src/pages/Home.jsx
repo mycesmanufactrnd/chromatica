@@ -20,7 +20,7 @@ export default function Home() {
   const [isRecoloring, setIsRecoloring] = useState(false);
   const [showFashionMode, setShowFashionMode] = useState(false);
   const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion"
-  const [isFashionGenerating, setIsFashionGenerating] = useState(false);
+
 
   const handleImageSelect = async (file) => {
     setIsUploading(true);
@@ -29,8 +29,6 @@ export default function Home() {
     setShowFashionMode(false);
     setActiveTab("standard");
     setShowComparison(true);
-    setIsFashionGenerating(false);
-
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setImageUrl(file_url);
     setIsUploading(false);
@@ -88,7 +86,6 @@ Target color: ${targetColor}`,
   const handleFashionApply = async (styleDescription, aestheticNote) => {
     if (!imageUrl) return;
     setIsRecoloring(true);
-    setIsFashionGenerating(true);
     setShowComparison(true);
 
     const result = await base44.integrations.Core.GenerateImage({
@@ -109,7 +106,6 @@ Apply: ${styleDescription}`,
 
     setRecoloredUrl(result.url);
     setIsRecoloring(false);
-    setIsFashionGenerating(false);
   };
 
   const handleReset = () => {
@@ -119,7 +115,6 @@ Apply: ${styleDescription}`,
     setShowFashionMode(false);
     setActiveTab("standard");
     setShowComparison(true);
-    setIsFashionGenerating(false);
   };
 
   return (
@@ -207,7 +202,7 @@ Apply: ${styleDescription}`,
                 animate={activeTab === "fashion" ? { y: -16 } : { y: 0 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
-                {isFashionGenerating ? (
+                {isRecoloring ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.97 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -239,15 +234,6 @@ Apply: ${styleDescription}`,
                 >
                   <div className="w-5 h-5 border-2 border-muted-foreground/20 border-t-accent rounded-full animate-spin" />
                   <span className="ml-2 text-sm text-muted-foreground">Analyzing colors...</span>
-                </motion.div>
-              )}
-
-              {isRecoloring && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="flex items-center justify-center py-4"
-                >
-                  <div className="w-5 h-5 border-2 border-muted-foreground/20 border-t-accent rounded-full animate-spin" />
-                  <span className="ml-2 text-sm text-muted-foreground">Generating your look...</span>
                 </motion.div>
               )}
 

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Loader2, Copy, Check, Wand2, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, Loader2, Wand2, ChevronDown, ChevronUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { base44 } from "@/api/base44Client";
 
 const COLOR_SUGGESTIONS = [
@@ -62,47 +63,17 @@ function SuggestionChip({ label, icon, hex, selected, onClick }) {
 }
 
 function AiResultCard({ suggestion, onApply }) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = (e) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(suggestion.hex_code || "");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className="bg-card border border-border rounded-xl p-4 space-y-2"
     >
-      <div className="flex items-start gap-3">
-        {suggestion.hex_code && (
-          <div
-            className="w-10 h-10 rounded-lg border border-border/50 flex-shrink-0 shadow-sm"
-            style={{ backgroundColor: suggestion.hex_code }}
-          />
-        )}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">{suggestion.name}</p>
-            {suggestion.hex_code && (
-              <button onClick={copy} className="p-1 rounded hover:bg-secondary transition-colors">
-                {copied
-                  ? <Check className="w-3.5 h-3.5 text-accent" />
-                  : <Copy className="w-3.5 h-3.5 text-muted-foreground" />
-                }
-              </button>
-            )}
-          </div>
-          {suggestion.hex_code && (
-            <p className="text-xs font-mono text-muted-foreground">{suggestion.hex_code}</p>
-          )}
-          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            {suggestion.description}
-          </p>
-        </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground">{suggestion.name}</p>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          {suggestion.description}
+        </p>
       </div>
       <Button
         size="sm"
@@ -117,15 +88,49 @@ function AiResultCard({ suggestion, onApply }) {
   );
 }
 
+function SuggestionsDialog({ suggestions, onApply, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 40 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="bg-background border border-border rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl"
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-accent" />
+            <span className="text-sm font-semibold text-foreground">AI Suggestions</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full hover:bg-secondary flex items-center justify-center transition-colors"
+          >
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="overflow-y-auto p-5 space-y-3">
+          {suggestions.map((s, i) => (
+            <AiResultCard key={i} suggestion={s} onApply={(sug) => { onApply(sug); onClose(); }} />
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function FashionModePanel({ imageUrl, onApply, isApplying }) {
   const [selectedColors, setSelectedColors] = useState([]);
   const [selectedPatterns, setSelectedPatterns] = useState([]);
   const [customColor, setCustomColor] = useState("");
   const [customPattern, setCustomPattern] = useState("");
+  const [targetPart, setTargetPart] = useState("");
   const [aiResults, setAiResults] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showColorSuggestions, setShowColorSuggestions] = useState(true);
   const [showPatternSuggestions, setShowPatternSuggestions] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
 
   const toggleColor = (name) => {
     setSelectedColors((prev) =>
@@ -155,8 +160,9 @@ export default function FashionModePanel({ imageUrl, onApply, isApplying }) {
       ...(customPattern ? [customPattern] : []),
     ].join(", ");
 
-    const prompt = `You are a fashion AI. Analyze this image and suggest 3 creative fashion transformation ideas.
+    const prompt = `You are a fashion AI. Analyze this image and suggest 5 creative fashion transformation ideas.
 
+${targetPart ? `Focus specifically on this part of the outfit: ${targetPart}` : ""}
 ${colorPart ? `Color preferences: ${colorPart}` : ""}
 ${patternPart ? `Pattern/design preferences: ${patternPart}` : ""}
 ${!colorPart && !patternPart ? "Suggest freely based on current trends." : ""}
@@ -167,7 +173,7 @@ For each option provide:
 - Hex code (if color-based, otherwise null)
 - A one-line aesthetic description of how it would look
 
-Make it trendy, modern, and fashion-forward.`;
+Make it trendy, modern, and fashion-forward. Return exactly 5 suggestions.`;
 
     const result = await base44.integrations.Core.InvokeLLM({
       prompt,
@@ -192,6 +198,7 @@ Make it trendy, modern, and fashion-forward.`;
 
     setAiResults(result.suggestions);
     setIsGenerating(false);
+    setShowDialog(true);
   };
 
   const handleApply = (suggestion) => {
@@ -205,7 +212,9 @@ Make it trendy, modern, and fashion-forward.`;
         ? ` with ${customPattern} pattern`
         : "";
 
-    onApply(colorDesc + patternDesc, suggestion.description);
+    const partDesc = targetPart ? ` on ${targetPart}` : "";
+
+    onApply(colorDesc + patternDesc + partDesc, suggestion.description);
   };
 
   return (
@@ -219,6 +228,19 @@ Make it trendy, modern, and fashion-forward.`;
         <h3 className="text-sm font-semibold text-foreground tracking-wide uppercase">
           Fashion Mode
         </h3>
+      </div>
+
+      {/* What to change */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          🎯 What to change
+        </p>
+        <Textarea
+          value={targetPart}
+          onChange={(e) => setTargetPart(e.target.value)}
+          placeholder="e.g. the hijab, the trousers, the jacket, the whole outfit…"
+          className="rounded-xl text-sm bg-card border-border resize-none h-16"
+        />
       </div>
 
       {/* Color Section */}
@@ -355,21 +377,14 @@ Make it trendy, modern, and fashion-forward.`;
         )}
       </Button>
 
-      {/* AI Results */}
+      {/* Suggestions Dialog */}
       <AnimatePresence>
-        {aiResults && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-3"
-          >
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              AI Suggestions
-            </p>
-            {aiResults.map((s, i) => (
-              <AiResultCard key={i} suggestion={s} onApply={handleApply} />
-            ))}
-          </motion.div>
+        {showDialog && aiResults && (
+          <SuggestionsDialog
+            suggestions={aiResults}
+            onApply={handleApply}
+            onClose={() => setShowDialog(false)}
+          />
         )}
       </AnimatePresence>
     </motion.div>
