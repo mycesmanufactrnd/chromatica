@@ -1,37 +1,35 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles } from "lucide-react";
+import { Palette, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
 import ColorResult from "@/components/ColorResult";
 import RecolorPanel from "@/components/RecolorPanel";
-import FashionSuggestions from "@/components/FashionSuggestions";
+import FashionModePanel from "@/components/FashionModePanel";
 
 export default function Home() {
   const [imageUrl, setImageUrl] = useState(null);
   const [recoloredUrl, setRecoloredUrl] = useState(null);
   const [showComparison, setShowComparison] = useState(true);
   const [colorData, setColorData] = useState(null);
-  const [fashionSuggestions, setFashionSuggestions] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecoloring, setIsRecoloring] = useState(false);
-  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [showFashionMode, setShowFashionMode] = useState(false);
 
   const handleImageSelect = async (file) => {
     setIsUploading(true);
     setColorData(null);
     setRecoloredUrl(null);
-    setFashionSuggestions(null);
+    setShowFashionMode(false);
     setShowComparison(true);
 
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setImageUrl(file_url);
     setIsUploading(false);
 
-    // Auto-analyze color
     setIsAnalyzing(true);
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Analyze this image.
@@ -52,12 +50,7 @@ Keep response short and clear.`,
           hex_code: { type: "string" },
           explanation: { type: "string" },
         },
-        required: [
-          "simple_color_name",
-          "fashion_color_name",
-          "hex_code",
-          "explanation",
-        ],
+        required: ["simple_color_name", "fashion_color_name", "hex_code", "explanation"],
       },
     });
     setColorData(result);
@@ -87,46 +80,36 @@ Target color: ${targetColor}`,
     setIsRecoloring(false);
   };
 
-  const handleFashionMode = async () => {
+  const handleFashionApply = async (styleDescription, aestheticNote) => {
     if (!imageUrl) return;
-    setIsSuggesting(true);
+    setIsRecoloring(true);
+    setShowComparison(true);
 
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Analyze this image and suggest 3 alternative fashion color options for the main object.
+    const result = await base44.integrations.Core.GenerateImage({
+      prompt: `Transform the main object in this image with the following fashion style: ${styleDescription}
 
-For each option provide:
-- Color name
-- HEX code
-- Aesthetic description (1 line)
+Style notes: ${aestheticNote || ""}
 
-Make suggestions trendy and modern (fashion + aesthetic focused).`,
-      file_urls: [imageUrl],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          suggestions: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                color_name: { type: "string" },
-                hex_code: { type: "string" },
-                description: { type: "string" },
-              },
-            },
-          },
-        },
-      },
+STRICT RULES:
+- Keep the object shape, silhouette, and structure exactly the same
+- Preserve lighting direction and shadow placement
+- Apply the new color and/or pattern realistically onto the fabric/surface
+- Do NOT change background or environment
+- Result must look like a real fashion photo edit, photorealistic
+
+Apply: ${styleDescription}`,
+      existing_image_urls: [imageUrl],
     });
-    setFashionSuggestions(result.suggestions);
-    setIsSuggesting(false);
+
+    setRecoloredUrl(result.url);
+    setIsRecoloring(false);
   };
 
   const handleReset = () => {
     setImageUrl(null);
     setRecoloredUrl(null);
     setColorData(null);
-    setFashionSuggestions(null);
+    setShowFashionMode(false);
     setShowComparison(true);
   };
 
@@ -145,14 +128,17 @@ Make suggestions trendy and modern (fashion + aesthetic focused).`,
           </div>
           {imageUrl && (
             <Button
-              variant="ghost"
+              variant={showFashionMode ? "default" : "ghost"}
               size="sm"
-              className="text-xs text-muted-foreground gap-1.5 rounded-xl"
-              onClick={handleFashionMode}
-              disabled={isSuggesting}
+              className={`text-xs gap-1.5 rounded-xl ${showFashionMode ? "bg-accent text-accent-foreground hover:bg-accent/90" : "text-muted-foreground"}`}
+              onClick={() => setShowFashionMode((v) => !v)}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Fashion Mode
+              {showFashionMode ? (
+                <X className="w-3.5 h-3.5" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              {showFashionMode ? "Close" : "Fashion Mode"}
             </Button>
           )}
         </div>
@@ -168,7 +154,6 @@ Make suggestions trendy and modern (fashion + aesthetic focused).`,
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              {/* Hero */}
               <div className="text-center mb-8 pt-8">
                 <motion.h1
                   initial={{ opacity: 0, y: 16 }}
@@ -187,33 +172,24 @@ Make suggestions trendy and modern (fashion + aesthetic focused).`,
                   className="text-muted-foreground text-sm mt-3 max-w-xs mx-auto leading-relaxed"
                 >
                   Upload any fashion item to identify its exact color and
-                  reimagine it in any shade you love.
+                  reimagine it in any shade or pattern you love.
                 </motion.p>
               </div>
 
-              <ImageUploader
-                onImageSelect={handleImageSelect}
-                isLoading={isUploading}
-              />
+              <ImageUploader onImageSelect={handleImageSelect} isLoading={isUploading} />
 
-              {/* Feature pills */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
                 className="flex flex-wrap items-center justify-center gap-2 mt-8"
               >
-                {[
-                  "Color Detection",
-                  "AI Recoloring",
-                  "Fashion Naming",
-                  "Trendy Suggestions",
-                ].map((feature) => (
+                {["Color Detection", "AI Recoloring", "Fashion Naming", "Pattern Styles"].map((f) => (
                   <span
-                    key={feature}
+                    key={f}
                     className="px-3 py-1.5 rounded-full bg-secondary/60 border border-border text-xs font-medium text-muted-foreground"
                   >
-                    {feature}
+                    {f}
                   </span>
                 ))}
               </motion.div>
@@ -234,48 +210,53 @@ Make suggestions trendy and modern (fashion + aesthetic focused).`,
                 onReset={handleReset}
               />
 
-              {/* Analysis Loading */}
               {isAnalyzing && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="flex items-center justify-center py-6"
                 >
                   <div className="w-5 h-5 border-2 border-muted-foreground/20 border-t-accent rounded-full animate-spin" />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    Analyzing colors...
-                  </span>
+                  <span className="ml-2 text-sm text-muted-foreground">Analyzing colors...</span>
                 </motion.div>
               )}
 
-              <ColorResult colorData={colorData} />
-
-              {colorData && (
-                <RecolorPanel
-                  onRecolor={handleRecolor}
-                  isLoading={isRecoloring}
-                />
-              )}
-
-              {/* Recoloring Loading */}
               {isRecoloring && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="flex items-center justify-center py-4"
                 >
                   <div className="w-5 h-5 border-2 border-muted-foreground/20 border-t-accent rounded-full animate-spin" />
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    Generating recolored image...
-                  </span>
+                  <span className="ml-2 text-sm text-muted-foreground">Generating your look...</span>
                 </motion.div>
               )}
 
-              <FashionSuggestions
-                suggestions={fashionSuggestions}
-                onRecolor={handleRecolor}
-                isGenerating={isSuggesting}
-              />
+              <AnimatePresence mode="wait">
+                {showFashionMode ? (
+                  <motion.div
+                    key="fashion"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                  >
+                    <FashionModePanel
+                      imageUrl={imageUrl}
+                      onApply={handleFashionApply}
+                      isApplying={isRecoloring}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="standard"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="space-y-6"
+                  >
+                    <ColorResult colorData={colorData} />
+                    {colorData && (
+                      <RecolorPanel onRecolor={handleRecolor} isLoading={isRecoloring} />
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
