@@ -62,16 +62,17 @@ Keep response short and clear.`,
     setIsAnalyzing(false);
   };
 
-  const handleRecolor = async (targetColor) => {
+  const handleRecolor = async (targetColor, targetPart) => {
     if (!imageUrl) return;
     setIsRecoloring(true);
     setShowComparison(true);
 
     try {
       const result = await base44.integrations.Core.GenerateImage({
-        prompt: `Change the color of the main object in this image to: ${targetColor}
+        prompt: `Change the color of ${targetPart ? targetPart : "the main object"} in this image to: ${targetColor}
 
 STRICT RULES:
+- Only change the color of: ${targetPart || "the main object"}
 - Keep everything else exactly the same
 - Preserve lighting, shadows, texture, and realism
 - Do NOT change shape or design

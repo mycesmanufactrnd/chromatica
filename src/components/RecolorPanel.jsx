@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Paintbrush, ArrowRight, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 const QUICK_COLORS = [
@@ -17,11 +18,12 @@ const QUICK_COLORS = [
 
 export default function RecolorPanel({ onRecolor, isLoading }) {
   const [targetColor, setTargetColor] = useState("");
+  const [targetPart, setTargetPart] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (targetColor.trim()) {
-      onRecolor(targetColor.trim());
+      onRecolor(targetColor.trim(), targetPart.trim());
     }
   };
 
@@ -37,6 +39,16 @@ export default function RecolorPanel({ onRecolor, isLoading }) {
         <h3 className="text-sm font-semibold text-foreground tracking-wide uppercase">
           Recolor
         </h3>
+      </div>
+
+      <div className="mb-3">
+        <Textarea
+          value={targetPart}
+          onChange={(e) => setTargetPart(e.target.value)}
+          placeholder="What to change? e.g. the hijab, the jacket, the trousers… (leave blank to change everything)"
+          className="rounded-xl text-sm bg-card border-border resize-none h-16"
+          disabled={isLoading}
+        />
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
@@ -66,7 +78,7 @@ export default function RecolorPanel({ onRecolor, isLoading }) {
             key={color.name}
             onClick={() => {
               setTargetColor(color.name);
-              onRecolor(color.name);
+              onRecolor(color.name, targetPart.trim());
             }}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary/60 border border-border text-xs font-medium text-foreground hover:border-accent/30 hover:bg-accent/5 transition-all duration-200 disabled:opacity-50"
