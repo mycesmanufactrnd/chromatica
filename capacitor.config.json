@@ -1,0 +1,9 @@
+{
+  "appId": "com.chromatica.app",
+  "appName": "Chromatica",
+  "webDir": "dist",
+  "server": {
+    "url": "https://chromatica-lab.base44.app",
+    "cleartext": true
+  }
+}
