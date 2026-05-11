@@ -24,10 +24,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
   };
 
   const handleCapture = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot({
-      width: 1280,
-      height: 960,
-    });
+    const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
 
     // Convert base64 to JPEG for smaller file size
@@ -65,15 +62,14 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
           >
             <Webcam
               ref={webcamRef}
-              screenshotFormat="image/png"
-              screenshotQuality={0.85}
+              screenshotFormat="image/jpeg"
+              screenshotQuality={0.92}
               videoConstraints={{
                 facingMode: "environment",
-                width: { ideal: 1280 },
-                height: { ideal: 960 },
+                aspectRatio: 3 / 4,
               }}
               onUserMedia={() => setCameraReady(true)}
-              className="w-full h-auto max-h-[420px] object-cover"
+              className="w-full h-auto block"
             />
 
             {/* Close button */}
