@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Palette, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
 import ColorResult from "@/components/ColorResult";
@@ -284,6 +285,16 @@ Apply: ${styleDescription}`,
           )}
         </AnimatePresence>
       </main>
+      {/* Footer */}
+      <footer className="max-w-lg mx-auto px-4 py-6 flex items-center justify-center gap-4 border-t border-border/40">
+        <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          Privacy Policy
+        </Link>
+        <span className="text-border">·</span>
+        <Link to="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          Terms & Conditions
+        </Link>
+      </footer>
     </div>
   );
 }
