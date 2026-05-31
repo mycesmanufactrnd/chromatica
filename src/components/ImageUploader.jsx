@@ -24,18 +24,30 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
   };
 
   const handleCapture = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (!imageSrc) return;
+    const video = webcamRef.current?.video;
+    if (!video) return;
 
-    // Convert base64 to JPEG for smaller file size
-    fetch(imageSrc)
-      .then((r) => r.blob())
-      .then((blob) => {
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (!vw || !vh) return;
+
+    // Draw the raw video frame at its native resolution — no stretching
+    const canvas = document.createElement("canvas");
+    canvas.width = vw;
+    canvas.height = vh;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, vw, vh);
+
+    canvas.toBlob(
+      (blob) => {
         const file = new File([blob], "capture.jpg", { type: "image/jpeg" });
         setShowCamera(false);
         setCameraReady(false);
         onImageSelect(file);
-      });
+      },
+      "image/jpeg",
+      0.92
+    );
   }, [onImageSelect]);
 
   const closeCamera = () => {
@@ -66,7 +78,8 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
               screenshotQuality={0.92}
               videoConstraints={{
                 facingMode: "environment",
-                aspectRatio: 3 / 4,
+                width: { ideal: 1080 },
+                height: { ideal: 1440 },
               }}
               onUserMedia={() => setCameraReady(true)}
               className="w-full h-auto block"
