@@ -43,11 +43,20 @@ export default function ImagePreview({
         </AnimatePresence>
 
         {recoloredUrl && (
-          <div className="absolute top-3 left-3">
-            <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
-              {showComparison ? "Recolored" : "Original"}
-            </span>
-          </div>
+          <>
+            <div className="absolute top-3 left-3">
+              <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
+                {showComparison ? "Recolored" : "Original"}
+              </span>
+            </div>
+            <button
+              onClick={handleDownload}
+              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+              aria-label="Download"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </>
         )}
       </div>
 
@@ -62,15 +71,6 @@ export default function ImagePreview({
             >
               <ArrowLeftRight className="w-3.5 h-3.5" />
               {showComparison ? "Show Original" : "Show Recolored"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-              className="rounded-xl text-xs gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" />
-              Download
             </Button>
           </>
         )}
