@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Crown, Check } from "lucide-react";
+import { X, Crown, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { base44 } from "@/api/base44Client";
 import { PRO_PRICE } from "@/lib/usageLimits";
 
 const BENEFITS = [
@@ -27,8 +27,26 @@ const MESSAGES = {
 };
 
 export default function LimitDialog({ open, type, onClose }) {
-  const navigate = useNavigate();
+  const [upgrading, setUpgrading] = useState(false);
   if (!open) return null;
+
+  const handleUpgrade = async () => {
+    if (window.self !== window.top) {
+      alert("Checkout works only from a published app. Please open the app in a new tab to upgrade.");
+      return;
+    }
+    setUpgrading(true);
+    try {
+      const res = await base44.functions.invoke("create-checkout", {});
+      if (res?.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        setUpgrading(false);
+      }
+    } catch (e) {
+      setUpgrading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -70,10 +88,17 @@ export default function LimitDialog({ open, type, onClose }) {
         </div>
 
         <Button
-          onClick={() => navigate("/profile")}
+          onClick={handleUpgrade}
+          disabled={upgrading}
           className="w-full rounded-xl h-11 bg-gradient-to-r from-accent to-chart-2 text-white gap-2"
         >
-          <Crown className="w-4 h-4" /> Upgrade to Pro — ${PRO_PRICE}
+          {upgrading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <>
+              <Crown className="w-4 h-4" /> Upgrade to Pro — ${PRO_PRICE}
+            </>
+          )}
         </Button>
         <Button
           variant="ghost"
