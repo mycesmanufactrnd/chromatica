@@ -1,0 +1,80 @@
+{
+  "name": "GalleryItem",
+  "type": "object",
+  "properties": {
+    "image_url": {
+      "type": "string",
+      "description": "Image URL"
+    },
+    "type": {
+      "type": "string",
+      "description": "Item type",
+      "enum": [
+        "original",
+        "recolor",
+        "refashion"
+      ],
+      "default": "original"
+    },
+    "fashion_color_name": {
+      "type": "string",
+      "description": "Fashion color name"
+    },
+    "simple_color_name": {
+      "type": "string",
+      "description": "Simple color name"
+    },
+    "hex_code": {
+      "type": "string",
+      "description": "HEX color code"
+    },
+    "explanation": {
+      "type": "string",
+      "description": "Color explanation"
+    }
+  },
+  "required": [
+    "image_url"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

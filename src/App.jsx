@@ -10,6 +10,7 @@ import SharePage from './pages/SharePage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import Profile from './pages/Profile';
+import Gallery from './pages/Gallery';
 // Add page imports here
 
 const AuthenticatedApp = () => {
@@ -43,6 +44,7 @@ const AuthenticatedApp = () => {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndConditions />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/gallery" element={<Gallery />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

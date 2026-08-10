@@ -1,6 +1,6 @@
 export const TIER_LIMITS = {
-  free: { upload: 5, recolor: 10, refashion: 10 },
-  pro: { upload: 50, recolor: 100, refashion: 100 },
+  free: { upload: 5, recolor: 10, refashion: 10, gallery: 50 },
+  pro: { upload: 50, recolor: 100, refashion: 100, gallery: Infinity },
 };
 
 export const PRO_PRICE = 2.99;
@@ -14,6 +14,10 @@ const COUNT_FIELD = {
 export function getLimit(tier, type) {
   const limits = TIER_LIMITS[tier] || TIER_LIMITS.free;
   return limits[type] ?? 0;
+}
+
+export function isUnlimited(tier, type) {
+  return getLimit(tier, type) === Infinity;
 }
 
 export function getUsage(user, type) {

@@ -1,29 +1,34 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles, Loader2, User as UserIcon } from "lucide-react";
+import { Palette, Sparkles, Loader2, User as UserIcon, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/AuthContext";
-import { canPerform, nextCount } from "@/lib/usageLimits";
+import { canPerform, nextCount, getLimit } from "@/lib/usageLimits";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
 import ColorResult from "@/components/ColorResult";
 import RecolorPanel from "@/components/RecolorPanel";
 import FashionModePanel from "@/components/FashionModePanel";
 import ShareButton from "@/components/ShareButton";
+import LimitDialog from "@/components/LimitDialog";
 
 export default function Home() {
-  const [imageUrl, setImageUrl] = useState(null);
+  const location = useLocation();
+  const initial = location.state?.galleryImage;
+  const [imageUrl, setImageUrl] = useState(initial?.image_url || null);
   const [recoloredUrl, setRecoloredUrl] = useState(null);
   const [showComparison, setShowComparison] = useState(true);
-  const [colorData, setColorData] = useState(null);
+  const [colorData, setColorData] = useState(initial || null);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRecoloring, setIsRecoloring] = useState(false);
   const [showFashionMode, setShowFashionMode] = useState(false);
   const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion"
+  const [lastAction, setLastAction] = useState(null);
+  const [limitDialog, setLimitDialog] = useState({ open: false, type: null });
   const { toast } = useToast();
   const { user, isAuthenticated, navigateToLogin, refreshUser } = useAuth();
 
@@ -34,7 +39,7 @@ export default function Home() {
       return;
     }
     if (!canPerform(user, "upload")) {
-      toast({ description: "Upload limit reached. Upgrade to Pro for more.", duration: 2500 });
+      setLimitDialog({ open: true, type: "upload" });
       return;
     }
     setIsUploading(true);
@@ -74,12 +79,29 @@ Keep response short and clear.`,
     });
     setColorData(result);
     setIsAnalyzing(false);
+    try {
+      const tier = user?.tier || "free";
+      const limit = getLimit(tier, "gallery");
+      const canSave = limit === Infinity || (await base44.entities.GalleryItem.list()).length < limit;
+      if (canSave) {
+        await base44.entities.GalleryItem.create({
+          image_url: file_url,
+          type: "original",
+          fashion_color_name: result.fashion_color_name || "",
+          simple_color_name: result.simple_color_name || "",
+          hex_code: result.hex_code || "",
+          explanation: result.explanation || "",
+        });
+      }
+    } catch (e) {
+      console.error("Gallery auto-save failed", e);
+    }
   };
 
   const handleRecolor = async (targetColor, targetPart) => {
     if (!imageUrl) return;
     if (!canPerform(user, "recolor")) {
-      toast({ description: "Recolor limit reached. Upgrade to Pro for more.", duration: 2500 });
+      setLimitDialog({ open: true, type: "recolor" });
       return;
     }
     setIsRecoloring(true);
@@ -101,6 +123,7 @@ Target color: ${targetColor}`,
         existing_image_urls: [imageUrl],
       });
       setRecoloredUrl(result.url);
+      setLastAction("recolor");
       await base44.auth.updateMe({ recolor_count: nextCount(user, "recolor") });
       refreshUser();
     } catch (err) {
@@ -113,7 +136,7 @@ Target color: ${targetColor}`,
   const handleFashionApply = async (styleDescription, aestheticNote) => {
     if (!imageUrl) return;
     if (!canPerform(user, "refashion")) {
-      toast({ description: "Refashion limit reached. Upgrade to Pro for more.", duration: 2500 });
+      setLimitDialog({ open: true, type: "refashion" });
       return;
     }
     setIsRecoloring(true);
@@ -136,6 +159,7 @@ Apply: ${styleDescription}`,
         existing_image_urls: [imageUrl],
       });
       setRecoloredUrl(result.url);
+      setLastAction("refashion");
       await base44.auth.updateMe({ refashion_count: nextCount(user, "refashion") });
       refreshUser();
     } catch (err) {
@@ -152,6 +176,33 @@ Apply: ${styleDescription}`,
     setShowFashionMode(false);
     setActiveTab("standard");
     setShowComparison(true);
+    setLastAction(null);
+  };
+
+  const handleSaveToGallery = async () => {
+    if (!recoloredUrl) return;
+    try {
+      const tier = user?.tier || "free";
+      const limit = getLimit(tier, "gallery");
+      if (limit !== Infinity) {
+        const items = await base44.entities.GalleryItem.list();
+        if (items.length >= limit) {
+          setLimitDialog({ open: true, type: "gallery" });
+          return;
+        }
+      }
+      await base44.entities.GalleryItem.create({
+        image_url: recoloredUrl,
+        type: lastAction || "recolor",
+        fashion_color_name: colorData?.fashion_color_name || "",
+        simple_color_name: colorData?.simple_color_name || "",
+        hex_code: colorData?.hex_code || "",
+        explanation: colorData?.explanation || "",
+      });
+      toast({ description: "Saved to gallery", duration: 2000 });
+    } catch (e) {
+      toast({ description: "Failed to save", duration: 2000 });
+    }
   };
 
   return (
@@ -168,6 +219,12 @@ Apply: ${styleDescription}`,
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              to="/gallery"
+              className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center hover:border-accent/40 transition-colors"
+            >
+              <ImageIcon className="w-4 h-4 text-muted-foreground" />
+            </Link>
             {imageUrl && (
               <ShareButton
                 originalUrl={imageUrl}
@@ -291,6 +348,7 @@ Apply: ${styleDescription}`,
                     showComparison={showComparison}
                     onToggleComparison={() => setShowComparison(!showComparison)}
                     onReset={handleReset}
+                    onSave={handleSaveToGallery}
                   />
                 )}
               </motion.div>
@@ -350,6 +408,11 @@ Apply: ${styleDescription}`,
           Terms & Conditions
         </Link>
       </footer>
+      <LimitDialog
+        open={limitDialog.open}
+        type={limitDialog.type}
+        onClose={() => setLimitDialog({ open: false, type: null })}
+      />
     </div>
   );
 }

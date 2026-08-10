@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, RotateCcw, ArrowLeftRight } from "lucide-react";
+import { Download, RotateCcw, ArrowLeftRight, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ImagePreview({
@@ -9,6 +9,7 @@ export default function ImagePreview({
   showComparison,
   onToggleComparison,
   onReset,
+  onSave,
 }) {
   const displayUrl = showComparison && recoloredUrl ? recoloredUrl : originalUrl;
 
@@ -72,6 +73,17 @@ export default function ImagePreview({
               <ArrowLeftRight className="w-3.5 h-3.5" />
               {showComparison ? "Show Original" : "Show Recolored"}
             </Button>
+            {onSave && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSave}
+                className="rounded-xl text-xs gap-1.5"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                Save
+              </Button>
+            )}
           </>
         )}
         <Button
