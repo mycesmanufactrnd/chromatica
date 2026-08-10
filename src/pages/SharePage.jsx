@@ -68,8 +68,8 @@ export default function SharePage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <Palette className="w-4 h-4 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center shadow-sm shadow-accent/30">
+            <Palette className="w-4 h-4 text-white" />
           </div>
           <span className="font-serif text-lg font-semibold tracking-tight">Chromé</span>
         </div>
@@ -79,7 +79,7 @@ export default function SharePage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 
           {/* Image */}
-          <div className="relative rounded-2xl overflow-hidden bg-secondary/30 border border-border">
+          <div className="relative rounded-3xl overflow-hidden bg-secondary/30 border border-border">
             <img
               src={displayUrl}
               alt="Style experiment"
@@ -96,7 +96,7 @@ export default function SharePage() {
           {experiment.recolored_url && (
             <button
               onClick={() => setShowOriginal((v) => !v)}
-              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-accent transition-colors"
             >
               <ArrowLeftRight className="w-4 h-4" />
               {showOriginal ? "Show Recolored" : "Show Original"}
@@ -104,10 +104,10 @@ export default function SharePage() {
           )}
 
           {/* Color info card */}
-          <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+          <div className="bg-card border border-border rounded-3xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-4">
               <div
-                className="w-16 h-16 rounded-xl border border-border/50 shadow-sm flex-shrink-0"
+                className="w-16 h-16 rounded-2xl border border-border/50 shadow-sm flex-shrink-0"
                 style={{ backgroundColor: experiment.hex_code }}
               />
               <div>
@@ -116,9 +116,9 @@ export default function SharePage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between bg-secondary/60 rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between bg-accent/10 rounded-2xl px-4 py-3">
               <span className="text-sm font-mono font-medium tracking-wide">{experiment.hex_code}</span>
-              <button onClick={copyLink} className="p-1.5 rounded-lg hover:bg-background/80 transition-colors">
+              <button onClick={copyLink} className="p-1.5 rounded-full hover:bg-background/80 transition-colors">
                 {copied ? <Check className="w-4 h-4 text-accent" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
               </button>
             </div>
@@ -140,7 +140,7 @@ export default function SharePage() {
                 <button
                   key={s.label}
                   onClick={() => s.url ? window.open(s.url, "_blank") : copyLink()}
-                  className={`${s.color} text-xs font-medium px-3 py-2.5 rounded-xl transition-opacity hover:opacity-80`}
+                  className={`${s.color} text-xs font-medium px-3 py-2.5 rounded-full transition-opacity hover:opacity-80`}
                 >
                   {s.label === "Copy Link" && copied ? "Copied!" : s.label}
                 </button>
@@ -151,7 +151,7 @@ export default function SharePage() {
           {/* CTA */}
           <a
             href="/"
-            className="block w-full text-center py-3 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="block w-full text-center py-3 rounded-full bg-gradient-to-r from-accent to-chart-2 text-white text-sm font-medium shadow-sm shadow-accent/30 hover:opacity-90 transition-opacity"
           >
             Try Chromé for free →
           </a>
