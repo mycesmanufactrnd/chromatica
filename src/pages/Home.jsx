@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles, Loader2, User as UserIcon, Image as ImageIcon } from "lucide-react";
+import { Palette, Sparkles, Loader2, User as UserIcon, Image as ImageIcon, LogIn } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
@@ -219,29 +219,42 @@ Apply: ${styleDescription}`,
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/gallery"
-              className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center hover:border-accent/40 transition-colors"
-            >
-              <ImageIcon className="w-4 h-4 text-muted-foreground" />
-            </Link>
-            {imageUrl && (
-              <ShareButton
-                originalUrl={imageUrl}
-                recoloredUrl={recoloredUrl}
-                colorData={colorData}
-              />
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/gallery"
+                  className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center hover:border-accent/40 transition-colors"
+                >
+                  <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                </Link>
+                {imageUrl && (
+                  <ShareButton
+                    originalUrl={imageUrl}
+                    recoloredUrl={recoloredUrl}
+                    colorData={colorData}
+                  />
+                )}
+                <Link
+                  to="/profile"
+                  className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden hover:border-accent/40 transition-colors"
+                >
+                  {user?.profile_image_url ? (
+                    <img src={user.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-base">{user?.profile_icon || <UserIcon className="w-4 h-4 text-muted-foreground" />}</span>
+                  )}
+                </Link>
+              </>
+            ) : (
+              <Button
+                size="sm"
+                className="rounded-full gap-1.5 h-9 px-4 text-xs font-medium bg-gradient-to-r from-accent to-chart-2 text-white shadow-sm shadow-accent/30 hover:opacity-90 border-0"
+                onClick={() => navigateToLogin()}
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Log in
+              </Button>
             )}
-            <Link
-              to="/profile"
-              className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden hover:border-accent/40 transition-colors"
-            >
-              {user?.profile_image_url ? (
-                <img src={user.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-base">{user?.profile_icon || <UserIcon className="w-4 h-4 text-muted-foreground" />}</span>
-              )}
-            </Link>
           </div>
         </div>
       </header>

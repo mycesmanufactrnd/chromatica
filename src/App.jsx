@@ -34,11 +34,11 @@ const AppRoutes = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/share/:id" element={<SharePage />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/share/:id" element={<SharePage />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsAndConditions />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/gallery" element={<Gallery />} />
       </Route>
