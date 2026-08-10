@@ -291,7 +291,12 @@ Apply: ${styleDescription}`,
                 </motion.p>
               </div>
 
-              <ImageUploader onImageSelect={handleImageSelect} isLoading={isUploading} />
+              <ImageUploader
+                onImageSelect={handleImageSelect}
+                isLoading={isUploading}
+                isAuthenticated={isAuthenticated}
+                onRequireAuth={navigateToLogin}
+              />
 
               <motion.div
                 initial={{ opacity: 0 }}

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 
-export default function ImageUploader({ onImageSelect, isLoading }) {
+export default function ImageUploader({ onImageSelect, isLoading, isAuthenticated, onRequireAuth }) {
   const fileInputRef = useRef(null);
   const webcamRef = useRef(null);
   const [showCamera, setShowCamera] = useState(false);
@@ -12,6 +12,10 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
 
   const handleDrop = (e) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return;
+    }
     const file = e.dataTransfer?.files?.[0];
     if (file && file.type.startsWith("image/")) {
       onImageSelect(file);
@@ -53,6 +57,14 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
   const closeCamera = () => {
     setShowCamera(false);
     setCameraReady(false);
+  };
+
+  const guard = (fn) => () => {
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return;
+    }
+    fn();
   };
 
   return (
@@ -119,7 +131,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
             <div
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={guard(() => fileInputRef.current?.click())}
               className={`
                 relative cursor-pointer group
                 border-2 border-dashed border-accent/25 rounded-3xl
@@ -155,7 +167,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
           <Button
             variant="outline"
             className="flex-1 rounded-full gap-2 h-11 text-sm border-accent/25 hover:bg-accent/10 hover:text-accent"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={guard(() => fileInputRef.current?.click())}
           >
             <Upload className="w-4 h-4" />
             Upload File
@@ -163,7 +175,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
           <Button
             variant="outline"
             className="flex-1 rounded-full gap-2 h-11 text-sm border-accent/25 hover:bg-accent/10 hover:text-accent"
-            onClick={() => setShowCamera(true)}
+            onClick={guard(() => setShowCamera(true))}
           >
             <Camera className="w-4 h-4" />
             Use Camera
