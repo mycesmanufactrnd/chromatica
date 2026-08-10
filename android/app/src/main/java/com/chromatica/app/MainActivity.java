@@ -1,4 +1,4 @@
-package com.chromatica.app;
+package com.myces.chromatica;
 
 import com.getcapacitor.BridgeActivity;
 

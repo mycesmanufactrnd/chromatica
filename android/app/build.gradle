@@ -1,10 +1,40 @@
 apply plugin: 'com.android.application'
 
+import java.util.Properties
+import java.io.FileInputStream
+
 android {
-    namespace = "com.chromatica.app"
+    namespace = "com.myces.chromatica"
     compileSdk = rootProject.ext.compileSdkVersion
+
+    def keystoreProperties = new Properties()
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                def storeFilePath = keystoreProperties['storeFile']
+                def storePasswordValue = keystoreProperties['storePassword']
+                def keyAliasValue = keystoreProperties['keyAlias']
+                def keyPasswordValue = keystoreProperties['keyPassword']
+
+                if (!storeFilePath || !storePasswordValue || !keyAliasValue || !keyPasswordValue) {
+                    throw new GradleException("android/keystore.properties is missing one of: storeFile, storePassword, keyAlias, keyPassword")
+                }
+
+                storeFile file(storeFilePath)
+                storePassword storePasswordValue
+                keyAlias keyAliasValue
+                keyPassword keyPasswordValue
+            }
+        }
+    }
+
     defaultConfig {
-        applicationId "com.chromatica.app"
+        applicationId "com.myces.chromatica"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -19,6 +49,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            // Required for Play Store release builds. Create android/keystore.properties (see example)
+            // to enable release signing.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

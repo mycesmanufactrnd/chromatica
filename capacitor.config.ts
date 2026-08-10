@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.chromatica.app',
+  appId: 'com.myces.chromatica',
   appName: 'Chromatica',
   webDir: 'dist'
 };

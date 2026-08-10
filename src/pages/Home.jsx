@@ -135,8 +135,8 @@ Apply: ${styleDescription}`,
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Palette className="w-4 h-4 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-chart-2 flex items-center justify-center shadow-sm shadow-accent/30">
+              <Palette className="w-4 h-4 text-white" />
             </div>
             <span className="font-serif text-lg font-semibold tracking-tight">
               Chromatica
@@ -156,31 +156,44 @@ Apply: ${styleDescription}`,
       <main className="max-w-lg mx-auto px-4 py-6 pb-24 space-y-6">
         <AnimatePresence mode="wait">
           {!imageUrl ? (
-            <motion.div
-              key="upload-state"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="text-center mb-8 pt-8">
-                <motion.h1
-                  initial={{ opacity: 0, y: 16 }}
+            <motion.div key="upload-state" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative">
+              {/* Decorative background glow */}
+              <div className="pointer-events-none absolute inset-x-0 -top-6 h-72 overflow-hidden -z-10">
+                <div className="absolute -left-10 top-0 w-56 h-56 rounded-full bg-accent/25 blur-3xl" />
+                <div className="absolute right-0 top-10 w-48 h-48 rounded-full bg-chart-2/25 blur-3xl" />
+                <div className="absolute left-1/3 top-24 w-40 h-40 rounded-full bg-chart-3/20 blur-3xl" />
+              </div>
+
+              <div className="text-center mb-7 pt-6">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="font-serif text-3xl md:text-4xl font-semibold text-foreground leading-tight"
+                  transition={{ duration: 0.4 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-accent/15 to-chart-2/15 border border-accent/20 text-[11px] font-medium text-accent mb-4"
                 >
-                  Discover & Recolor
+                  <Sparkles className="w-3 h-3" />
+                  AI-powered color studio
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.05 }}
+                  className="font-serif text-2xl md:text-3xl font-semibold text-foreground leading-snug"
+                >
+                  Discover &amp; recolor
                   <br />
-                  <span className="text-accent">Any Shade</span>
+                  <span className="bg-gradient-to-r from-accent to-chart-2 bg-clip-text text-transparent">
+                    any shade you love
+                  </span>
                 </motion.h1>
                 <motion.p
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.15 }}
-                  className="text-muted-foreground text-sm mt-3 max-w-xs mx-auto leading-relaxed"
+                  className="text-muted-foreground text-[13px] mt-2.5 max-w-[15rem] mx-auto leading-relaxed"
                 >
-                  Upload any fashion item to identify its exact color and
-                  reimagine it in any shade or pattern you love.
+                  Upload a fashion piece to identify its exact color and reimagine it in any shade or pattern.
                 </motion.p>
               </div>
 
@@ -190,14 +203,19 @@ Apply: ${styleDescription}`,
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="flex flex-wrap items-center justify-center gap-2 mt-8"
+                className="flex flex-wrap items-center justify-center gap-2 mt-7"
               >
-                {["Color Detection", "AI Recoloring", "Fashion Naming", "Pattern Styles"].map((f) => (
+                {[
+                  { label: "Color Detection", className: "bg-accent/10 text-accent border-accent/20" },
+                  { label: "AI Recoloring", className: "bg-chart-2/10 text-chart-2 border-chart-2/20" },
+                  { label: "Fashion Naming", className: "bg-chart-3/15 text-foreground/70 border-chart-3/25" },
+                  { label: "Pattern Styles", className: "bg-chart-4/10 text-chart-4 border-chart-4/20" },
+                ].map((f) => (
                   <span
-                    key={f}
-                    className="px-3 py-1.5 rounded-full bg-secondary/60 border border-border text-xs font-medium text-muted-foreground"
+                    key={f.label}
+                    className={`px-3 py-1.5 rounded-full border text-[11px] font-medium ${f.className}`}
                   >
-                    {f}
+                    {f.label}
                   </span>
                 ))}
               </motion.div>

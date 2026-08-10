@@ -122,25 +122,25 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
               onClick={() => fileInputRef.current?.click()}
               className={`
                 relative cursor-pointer group
-                border-2 border-dashed border-border rounded-2xl
-                bg-card/50 backdrop-blur-sm
+                border-2 border-dashed border-accent/25 rounded-3xl
+                bg-gradient-to-b from-card/60 to-accent/5 backdrop-blur-sm
                 transition-all duration-300
-                hover:border-accent/50 hover:bg-accent/5
+                hover:border-accent/50 hover:shadow-lg hover:shadow-accent/10
                 ${isLoading ? "pointer-events-none opacity-60" : ""}
               `}
             >
               <div className="flex flex-col items-center justify-center py-12 px-6">
-                <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mb-4 group-hover:bg-accent/10 transition-colors duration-300">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent/20 to-chart-2/20 flex items-center justify-center mb-4 group-hover:from-accent/30 group-hover:to-chart-2/30 transition-colors duration-300">
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-accent rounded-full animate-spin" />
                   ) : (
-                    <Upload className="w-5 h-5 text-muted-foreground group-hover:text-accent transition-colors duration-300" />
+                    <Upload className="w-5 h-5 text-accent transition-colors duration-300" />
                   )}
                 </div>
-                <p className="text-base font-medium text-foreground mb-1">
+                <p className="text-[15px] font-medium text-foreground mb-1">
                   {isLoading ? "Uploading..." : "Drop your image here"}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-[13px] text-muted-foreground">
                   or click to browse · JPG, PNG, WEBP
                 </p>
               </div>
@@ -154,7 +154,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="flex-1 rounded-xl gap-2 h-11 text-sm"
+            className="flex-1 rounded-full gap-2 h-11 text-sm border-accent/25 hover:bg-accent/10 hover:text-accent"
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="w-4 h-4" />
@@ -162,7 +162,7 @@ export default function ImageUploader({ onImageSelect, isLoading }) {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 rounded-xl gap-2 h-11 text-sm"
+            className="flex-1 rounded-full gap-2 h-11 text-sm border-accent/25 hover:bg-accent/10 hover:text-accent"
             onClick={() => setShowCamera(true)}
           >
             <Camera className="w-4 h-4" />

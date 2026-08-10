@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Permissions / features (declare only what you actually use) -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Required for WebRTC / react-webcam camera capture inside the WebView -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Don't block installs on devices without a camera -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -34,8 +42,4 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
-
-    <!-- Permissions -->
-
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
