@@ -25,6 +25,18 @@
     "explanation": {
       "type": "string",
       "description": "Color explanation"
+    },
+    "sharer_name": {
+      "type": "string",
+      "description": "Display name of the user who shared this look"
+    },
+    "sharer_image_url": {
+      "type": "string",
+      "description": "Profile image URL of the user who shared this look"
+    },
+    "sharer_icon": {
+      "type": "string",
+      "description": "Profile emoji icon of the user who shared this look"
     }
   },
   "required": [

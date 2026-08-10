@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, Sparkles, Loader2 } from "lucide-react";
+import { Palette, Sparkles, Loader2, User as UserIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/AuthContext";
+import { canPerform, nextCount } from "@/lib/usageLimits";
 import ImageUploader from "@/components/ImageUploader";
 import ImagePreview from "@/components/ImagePreview";
 import ColorResult from "@/components/ColorResult";
@@ -23,9 +25,18 @@ export default function Home() {
   const [showFashionMode, setShowFashionMode] = useState(false);
   const [activeTab, setActiveTab] = useState("standard"); // "standard" | "fashion"
   const { toast } = useToast();
+  const { user, isAuthenticated, navigateToLogin, refreshUser } = useAuth();
 
 
   const handleImageSelect = async (file) => {
+    if (!isAuthenticated) {
+      navigateToLogin();
+      return;
+    }
+    if (!canPerform(user, "upload")) {
+      toast({ description: "Upload limit reached. Upgrade to Pro for more.", duration: 2500 });
+      return;
+    }
     setIsUploading(true);
     setColorData(null);
     setRecoloredUrl(null);
@@ -35,6 +46,8 @@ export default function Home() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setImageUrl(file_url);
     setIsUploading(false);
+    await base44.auth.updateMe({ upload_count: nextCount(user, "upload") });
+    refreshUser();
 
     setIsAnalyzing(true);
     const result = await base44.integrations.Core.InvokeLLM({
@@ -65,6 +78,10 @@ Keep response short and clear.`,
 
   const handleRecolor = async (targetColor, targetPart) => {
     if (!imageUrl) return;
+    if (!canPerform(user, "recolor")) {
+      toast({ description: "Recolor limit reached. Upgrade to Pro for more.", duration: 2500 });
+      return;
+    }
     setIsRecoloring(true);
     setShowComparison(true);
 
@@ -84,6 +101,8 @@ Target color: ${targetColor}`,
         existing_image_urls: [imageUrl],
       });
       setRecoloredUrl(result.url);
+      await base44.auth.updateMe({ recolor_count: nextCount(user, "recolor") });
+      refreshUser();
     } catch (err) {
       const msg = err?.message?.replace(/^Base44Error:\s*/i, "") || "Image generation failed.";
       toast({ description: msg, duration: 2000 });
@@ -93,6 +112,10 @@ Target color: ${targetColor}`,
 
   const handleFashionApply = async (styleDescription, aestheticNote) => {
     if (!imageUrl) return;
+    if (!canPerform(user, "refashion")) {
+      toast({ description: "Refashion limit reached. Upgrade to Pro for more.", duration: 2500 });
+      return;
+    }
     setIsRecoloring(true);
     setShowComparison(true);
 
@@ -113,6 +136,8 @@ Apply: ${styleDescription}`,
         existing_image_urls: [imageUrl],
       });
       setRecoloredUrl(result.url);
+      await base44.auth.updateMe({ refashion_count: nextCount(user, "refashion") });
+      refreshUser();
     } catch (err) {
       const msg = err?.message?.replace(/^Base44Error:\s*/i, "") || "Image generation failed.";
       toast({ description: msg, duration: 2000 });
@@ -142,13 +167,25 @@ Apply: ${styleDescription}`,
               Chromatica
             </span>
           </div>
-          {imageUrl && (
-            <ShareButton
-              originalUrl={imageUrl}
-              recoloredUrl={recoloredUrl}
-              colorData={colorData}
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {imageUrl && (
+              <ShareButton
+                originalUrl={imageUrl}
+                recoloredUrl={recoloredUrl}
+                colorData={colorData}
+              />
+            )}
+            <Link
+              to="/profile"
+              className="w-9 h-9 rounded-full bg-secondary border border-border flex items-center justify-center overflow-hidden hover:border-accent/40 transition-colors"
+            >
+              {user?.profile_image_url ? (
+                <img src={user.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-base">{user?.profile_icon || <UserIcon className="w-4 h-4 text-muted-foreground" />}</span>
+              )}
+            </Link>
+          </div>
         </div>
       </header>
 

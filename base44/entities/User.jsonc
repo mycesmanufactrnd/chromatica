@@ -1,4 +1,6 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
     "role": {
       "type": "string",
@@ -7,11 +9,49 @@
         "admin",
         "user"
       ]
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Display name shown on profile and shared looks"
+    },
+    "profile_image_url": {
+      "type": "string",
+      "description": "Profile image URL"
+    },
+    "profile_icon": {
+      "type": "string",
+      "description": "Profile emoji icon"
+    },
+    "tier": {
+      "type": "string",
+      "description": "Subscription tier",
+      "enum": [
+        "free",
+        "pro"
+      ],
+      "default": "free"
+    },
+    "upload_count": {
+      "type": "number",
+      "description": "Total image uploads used",
+      "default": 0
+    },
+    "recolor_count": {
+      "type": "number",
+      "description": "Total recolors used",
+      "default": 0
+    },
+    "refashion_count": {
+      "type": "number",
+      "description": "Total refashion transformations used",
+      "default": 0
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
     }
   },
   "required": [
     "role"
-  ],
-  "name": "User",
-  "type": "object"
+  ]
 }

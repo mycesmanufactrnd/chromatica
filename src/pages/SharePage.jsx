@@ -103,6 +103,27 @@ export default function SharePage() {
             </button>
           )}
 
+          {/* Shared by */}
+          {experiment.sharer_name && (
+            <div className="flex items-center gap-3">
+              {experiment.sharer_image_url ? (
+                <img
+                  src={experiment.sharer_image_url}
+                  alt={experiment.sharer_name}
+                  className="w-10 h-10 rounded-full object-cover border border-border"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-lg">
+                  {experiment.sharer_icon || "🎨"}
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground">Shared by</p>
+                <p className="text-sm font-medium text-foreground">{experiment.sharer_name}</p>
+              </div>
+            </div>
+          )}
+
           {/* Color info card */}
           <div className="bg-card border border-border rounded-3xl p-5 space-y-4 shadow-sm">
             <div className="flex items-center gap-4">

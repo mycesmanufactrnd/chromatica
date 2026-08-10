@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Share2, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function ShareButton({ originalUrl, recoloredUrl, colorData }) {
   const [loading, setLoading] = useState(false);
   const [shareUrl, setShareUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
 
   const handleShare = async () => {
     if (shareUrl) {
@@ -24,6 +26,9 @@ export default function ShareButton({ originalUrl, recoloredUrl, colorData }) {
       simple_color_name: colorData?.simple_color_name || "",
       hex_code: colorData?.hex_code || "",
       explanation: colorData?.explanation || "",
+      sharer_name: user?.display_name || user?.full_name || "Chromatica user",
+      sharer_image_url: user?.profile_image_url || null,
+      sharer_icon: user?.profile_icon || null,
     });
 
     const url = `${window.location.origin}/share/${experiment.id}`;
