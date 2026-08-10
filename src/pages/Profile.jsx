@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Loader2, Crown, Check, Sparkles, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Crown, Check, Sparkles, Upload, LogOut } from "lucide-react";
 import { PRO_PRICE, getUsage, getLimit } from "@/lib/usageLimits";
 
 const EMOJIS = ["🎨", "🌸", "✨", "👗", "🦋", "🌈", "💫", "🪄", "🖤", "🤍", "🔥", "💎"];
@@ -17,7 +17,7 @@ const USAGE_TYPES = [
 ];
 
 export default function Profile() {
-  const { user, isAuthenticated, navigateToLogin, refreshUser } = useAuth();
+  const { user, isAuthenticated, navigateToLogin, refreshUser, logout } = useAuth();
   const { toast } = useToast();
   const [displayName, setDisplayName] = useState("");
   const [icon, setIcon] = useState("");
@@ -250,6 +250,15 @@ export default function Profile() {
             </Button>
           </div>
         )}
+
+        <Button
+          variant="ghost"
+          onClick={() => logout()}
+          className="w-full rounded-xl h-11 text-muted-foreground hover:text-destructive gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          Log out
+        </Button>
       </main>
     </div>
   );
